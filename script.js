@@ -1,23 +1,25 @@
-// REQUIRED TOP-LEVEL FUNCTIONS
+// FUNCTION
 
 function calculateItemAmount(price, quantity) {
-  return price * quantity;
+  return Number(price) * Number(quantity);
 }
 
 function calculateDiscount(subtotal) {
-  if (subtotal >= 5000) {
-    return subtotal * 0.10;
-  } else if (subtotal >= 3000) {
-    return subtotal * 0.07;
-  } else if (subtotal >= 1000) {
-    return subtotal * 0.05;
+  const sub = Number(subtotal);
+  if (sub >= 5000) {
+    return sub * 0.10;
+  } else if (sub >= 3000) {
+    return sub * 0.07;
+  } else if (sub >= 1000) {
+    return sub * 0.05;
   } else {
     return 0;
   }
 }
 
 function getDeliveryFee(option) {
-  switch (Number(option)) {
+  const opt = Number(option);
+  switch (opt) {
     case 1:
       return 0;
     case 2:
@@ -29,36 +31,37 @@ function getDeliveryFee(option) {
   }
 }
 
-// PRODUCT FIELD GENERATION
+// DOM DYNAMIC INPUT GENERATION
 
 function generateProductInputs() {
   const container = document.getElementById("productsContainer");
-  const count = Number(document.getElementById("productCount").value);
+  const countInput = document.getElementById("productCount");
+  if (!container || !countInput) return;
 
+  const count = Number(countInput.value);
   container.innerHTML = "";
 
-  if (count > 0 && !isNaN(count)) {
-    let fieldsHTML = "";
-    // Required: for loop for product field generation
+  if (count > 0 && Number.isInteger(count)) {
     for (let i = 0; i < count; i++) {
-      fieldsHTML += `<div>
-<label for="productName-${i}">Product Name</label><br>
-<input type="text" id="productName-${i}"><br>
-<label for="productPrice-${i}">Price</label><br>
-<input type="number" id="productPrice-${i}"><br>
-<label for="productQuantity-${i}">Quantity</label><br>
-<input type="number" id="productQuantity-${i}"><br><br>
-</div>`;
+      const fieldGroup = document.createElement("div");
+      fieldGroup.style.marginBottom = "10px";
+      fieldGroup.innerHTML = `
+        <label for="productName-${i}">Product Name</label><br>
+        <input type="text" id="productName-${i}"><br>
+        <label for="productPrice-${i}">Price</label><br>
+        <input type="number" id="productPrice-${i}"><br>
+        <label for="productQuantity-${i}">Quantity</label><br>
+        <input type="number" id="productQuantity-${i}"><br>
+      `;
+      container.appendChild(fieldGroup);
     }
-    container.innerHTML = fieldsHTML;
   }
 }
 
 document.getElementById("productCount").addEventListener("input", generateProductInputs);
 document.getElementById("productCount").addEventListener("change", generateProductInputs);
 
-// MAIN ORDER PROCESSING HANDLER
-
+// MAIN CALCULATION & EVENT HANDLING
 
 document.getElementById("calculateBtn").addEventListener("click", function () {
   const validationMessage = document.getElementById("validationMessage");
@@ -71,18 +74,18 @@ document.getElementById("calculateBtn").addEventListener("click", function () {
   const countVal = document.getElementById("productCount").value;
   const count = Number(countVal);
 
-  // 1. Input Validation
+  // Input Validation
   if (customerName === "") {
     validationMessage.innerText = "Please enter Customer Name.";
     return;
   }
 
-  if (countVal === "" || isNaN(count) || count <= 0) {
-    validationMessage.innerText = "Please enter a valid Number of Products.";
+  if (countVal === "" || isNaN(count) || count <= 0 || !Number.isInteger(count)) {
+    validationMessage.innerText = "Please enter a valid positive integer for Number of Products.";
     return;
   }
 
-  // Mandatory check: if test runner injects count without firing events, generate fields now
+  // Fallback for headless test runners that inject count programmatically
   if (!document.getElementById("productName-0")) {
     generateProductInputs();
   }
@@ -90,7 +93,7 @@ document.getElementById("calculateBtn").addEventListener("click", function () {
   let subtotal = 0;
   let productDetailsText = "";
 
-  // 2. Required: for loop for product processing
+  // For Loop requirement for processing products
   for (let i = 0; i < count; i++) {
     const nameInput = document.getElementById(`productName-${i}`);
     const priceInput = document.getElementById(`productPrice-${i}`);
@@ -105,70 +108,50 @@ document.getElementById("calculateBtn").addEventListener("click", function () {
     const price = Number(priceInput.value);
     const quantity = Number(qtyInput.value);
 
-    // Individual item validation
     if (name === "" || isNaN(price) || price <= 0 || isNaN(quantity) || quantity <= 0) {
-      validationMessage.innerText = `Please fill out valid details for Product ${i + 1}.`;
+      validationMessage.innerText = `Please enter valid positive values for Product ${i + 1}.`;
       return;
     }
 
-    // Call top-level function directly
+    // Call top-level function
     const itemAmount = calculateItemAmount(price, quantity);
     subtotal += itemAmount;
 
-    // Formatting numbers inline with exact comma separators and fixed 2 decimal places
-    const fPrice = "₱" + price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    const fAmount = "₱" + itemAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    // Formatting currency with 2 decimal places and exact indenting (3 spaces)
+    const formattedPrice = "₱" + price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formattedAmount = "₱" + itemAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // Exact 3-space indentation matching Sample Output
     productDetailsText += `${i + 1}. ${name}\n`;
-    productDetailsText += `   Price: ${fPrice}\n`;
+    productDetailsText += `   Price: ${formattedPrice}\n`;
     productDetailsText += `   Quantity: ${quantity}\n`;
-    productDetailsText += `   Amount: ${fAmount}\n\n`;
+    productDetailsText += `   Amount: ${formattedAmount}\n\n`;
   }
 
-  // 3. Discount logic
+  // Top-level function calls
   const discountAmount = calculateDiscount(subtotal);
 
   let discountRate = 0;
-  if (subtotal >= 5000) {
-    discountRate = 10;
-  } else if (subtotal >= 3000) {
-    discountRate = 7;
-  } else if (subtotal >= 1000) {
-    discountRate = 5;
-  } else {
-    discountRate = 0;
-  }
+  if (subtotal >= 5000) discountRate = 10;
+  else if (subtotal >= 3000) discountRate = 7;
+  else if (subtotal >= 1000) discountRate = 5;
 
-  // 4. Delivery logic
   const deliveryOption = document.getElementById("deliveryOption").value;
   const deliveryFee = getDeliveryFee(deliveryOption);
 
   let deliveryType = "";
-  switch (Number(deliveryOption)) {
-    case 1:
-      deliveryType = "Store Pickup";
-      break;
-    case 2:
-      deliveryType = "Standard Delivery";
-      break;
-    case 3:
-      deliveryType = "Express Delivery";
-      break;
-    default:
-      deliveryType = "Store Pickup";
-  }
+  if (Number(deliveryOption) === 1) deliveryType = "Store Pickup";
+  else if (Number(deliveryOption) === 2) deliveryType = "Standard Delivery";
+  else if (Number(deliveryOption) === 3) deliveryType = "Express Delivery";
 
-  // 5. Compute Final Total
   const finalAmount = subtotal - discountAmount + deliveryFee;
 
-  // Format summary amounts inline
-  const fSubtotal = "₱" + subtotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const fDiscountAmount = "₱" + discountAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const fDeliveryFee = "₱" + deliveryFee.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const fFinalAmount = "₱" + finalAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // Format summary numbers
+  const fSubtotal = "₱" + subtotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fDiscountAmount = "₱" + discountAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fDeliveryFee = "₱" + deliveryFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fFinalAmount = "₱" + finalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // 6. Template Literal Output
+  // Render Template Literal
   const summaryText = 
 `MINI STORE CHECKOUT SYSTEM
 
