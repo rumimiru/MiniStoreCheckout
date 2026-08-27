@@ -168,5 +168,6 @@ function calculateOrder() {
   console.log(summaryText);
 }
 
-document.getElementById("generateBtn").addEventListener("click", generateProducts);
+const genBtn = document.getElementById("generateBtn");
+if (genBtn) genBtn.addEventListener("click", generateProducts);
 document.getElementById("calculateBtn").addEventListener("click", calculateOrder);
