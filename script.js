@@ -1,5 +1,5 @@
 function calculateItemAmount(price, quantity) {
-  return price * quantity;
+  return Number(price) * Number(quantity);
 }
 
 function calculateDiscount(subtotal) {
