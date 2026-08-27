@@ -15,7 +15,7 @@ function calculateDiscount(subtotal) {
 }
 
 function getDeliveryFee(option) {
-  switch (option) {
+  switch (String(option)) {
     case "1":
       return 0;
     case "2":
@@ -25,6 +25,12 @@ function getDeliveryFee(option) {
     default:
       return 0;
   }
+}
+
+function formatAmount(amount) {
+  const parts = amount.toFixed(2).split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${parts[0]}.${parts[1]}`;
 }
 
 function generateProducts() {
@@ -46,13 +52,13 @@ function generateProducts() {
     const product = document.createElement("div");
 
     product.innerHTML =
-      "<strong>Product " + (i + 1) + "</strong><br>" +
-      "<label>Product Name</label><br>" +
-      "<input type='text' id='productName-" + i + "'><br>" +
-      "<label>Price</label><br>" +
-      "<input type='text' id='productPrice-" + i + "'><br>" +
-      "<label>Quantity</label><br>" +
-      "<input type='text' id='productQuantity-" + i + "'><br><br>";
+      `<strong>Product ${i + 1}</strong><br>` +
+      `<label>Product Name</label><br>` +
+      `<input type="text" id="productName-${i}"><br>` +
+      `<label>Price</label><br>` +
+      `<input type="text" id="productPrice-${i}"><br>` +
+      `<label>Quantity</label><br>` +
+      `<input type="text" id="productQuantity-${i}"><br><br>`;
 
     container.appendChild(product);
   }
@@ -82,9 +88,9 @@ function calculateOrder() {
   let productDetails = "";
 
   for (let i = 0; i < count; i++) {
-    const nameField = document.getElementById("productName-" + i);
-    const priceField = document.getElementById("productPrice-" + i);
-    const quantityField = document.getElementById("productQuantity-" + i);
+    const nameField = document.getElementById(`productName-${i}`);
+    const priceField = document.getElementById(`productPrice-${i}`);
+    const quantityField = document.getElementById(`productQuantity-${i}`);
 
     if (!nameField || !priceField || !quantityField) {
       validationMessage.innerHTML = "Please click 'Generate Product Fields' first.";
@@ -96,20 +102,17 @@ function calculateOrder() {
     const quantity = Number(quantityField.value);
 
     if (productName.trim() === "") {
-      validationMessage.innerHTML =
-        "Product " + (i + 1) + " name cannot be empty.";
+      validationMessage.innerHTML = `Product ${i + 1} name cannot be empty.`;
       return;
     }
 
     if (isNaN(price) || price <= 0) {
-      validationMessage.innerHTML =
-        "Product " + (i + 1) + " price must be a valid positive number.";
+      validationMessage.innerHTML = `Product ${i + 1} price must be a valid positive number.`;
       return;
     }
 
     if (isNaN(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
-      validationMessage.innerHTML =
-        "Product " + (i + 1) + " quantity must be a valid positive number.";
+      validationMessage.innerHTML = `Product ${i + 1} quantity must be a valid positive number.`;
       return;
     }
 
@@ -117,10 +120,10 @@ function calculateOrder() {
 
     subtotal += itemAmount;
 
-    productDetails += (i + 1) + ". " + productName + "\n";
-    productDetails += "   Price: ₱" + price.toFixed(2) + "\n";
-    productDetails += "   Quantity: " + quantity + "\n";
-    productDetails += "   Amount: ₱" + itemAmount.toFixed(2) + "\n\n";
+    productDetails += `${i + 1}. ${productName}\n`;
+    productDetails += `   Price: ₱${formatAmount(price)}\n`;
+    productDetails += `   Quantity: ${quantity}\n`;
+    productDetails += `   Amount: ₱${formatAmount(itemAmount)}\n\n`;
   }
 
   const discount = calculateDiscount(subtotal);
@@ -151,15 +154,15 @@ function calculateOrder() {
   const finalAmount = subtotal - discount + deliveryFee;
 
   let summaryText = "MINI STORE CHECKOUT SYSTEM\n\n";
-  summaryText += "Customer: " + customerName + "\n\n";
+  summaryText += `Customer: ${customerName}\n\n`;
   summaryText += productDetails;
   summaryText += "ORDER SUMMARY\n";
-  summaryText += "Subtotal: ₱" + subtotal.toFixed(2) + "\n";
-  summaryText += "Discount Rate: " + discountRate + "%\n";
-  summaryText += "Discount Amount: ₱" + discount.toFixed(2) + "\n";
-  summaryText += "Delivery Type: " + deliveryTypeText + "\n";
-  summaryText += "Delivery Fee: ₱" + deliveryFee.toFixed(2) + "\n";
-  summaryText += "Final Amount: ₱" + finalAmount.toFixed(2);
+  summaryText += `Subtotal: ₱${formatAmount(subtotal)}\n`;
+  summaryText += `Discount Rate: ${discountRate}%\n`;
+  summaryText += `Discount Amount: ₱${formatAmount(discount)}\n`;
+  summaryText += `Delivery Type: ${deliveryTypeText}\n`;
+  summaryText += `Delivery Fee: ₱${formatAmount(deliveryFee)}\n`;
+  summaryText += `Final Amount: ₱${formatAmount(finalAmount)}`;
 
   orderSummary.innerText = summaryText;
   console.log(summaryText);
