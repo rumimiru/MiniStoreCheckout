@@ -3,44 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <title>Mini Store Checkout System</title>
-  <link rel="stylesheet" href="style.css">
+</head>
+
 <body>
 
   <h1>MINI STORE CHECKOUT SYSTEM</h1>
 
-  <!-- Customer Name -->
   <label for="customerName">Customer Name</label><br>
   <input type="text" id="customerName"><br><br>
 
-  <!-- Number of Products -->
   <label for="productCount">Number of Products</label><br>
   <input type="text" id="productCount"><br><br>
 
-  <!-- Button to generate the product input fields -->
   <button id="generateBtn">Generate Product Fields</button>
 
   <br><br>
 
-  <!-- Product fields will be created here by the for loop in script.js -->
   <div id="productsContainer"></div>
 
-  <!-- Delivery Option -->
   <label for="deliveryOption">Delivery Option</label><br>
+
   <select id="deliveryOption">
     <option value="1">Store Pickup</option>
     <option value="2">Standard Delivery</option>
     <option value="3">Express Delivery</option>
-  </select><br><br>
+  </select>
 
-  <!-- Calculate Button -->
+  <br><br>
+
   <button id="calculateBtn">Calculate Order</button>
 
-  <!-- Validation messages show up here -->
   <p id="validationMessage"></p>
 
-  <!-- Final order summary shows up here -->
   <pre id="orderSummary"></pre>
 
   <script src="script.js"></script>
+
 </body>
 </html>
