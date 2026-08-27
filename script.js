@@ -1,154 +1,151 @@
 function calculateItemAmount(price, quantity) {
-  return price * quantity;
+  return Number(price) * Number(quantity);
 }
 
 function calculateDiscount(subtotal) {
-  if (subtotal >= 5000) {
-    return subtotal * 0.10;
-  } else if (subtotal >= 3000) {
-    return subtotal * 0.07;
-  } else if (subtotal >= 1000) {
-    return subtotal * 0.05;
+  const amt = Number(subtotal);
+  if (amt >= 5000) {
+    return amt * 0.10;
+  } else if (amt >= 3000) {
+    return amt * 0.07;
+  } else if (amt >= 1000) {
+    return amt * 0.05;
   } else {
     return 0;
   }
 }
 
 function getDeliveryFee(option) {
-  let fee = 0;
-  switch (Number(option)) {
-    case 1:
-      fee = 0;
-      break;
-    case 2:
-      fee = 80;
-      break;
-    case 3:
-      fee = 150;
-      break;
+  switch (String(option)) {
+    case "1":
+      return 0;
+    case "2":
+      return 80;
+    case "3":
+      return 150;
     default:
-      fee = 0;
+      return 0;
   }
-  return fee;
 }
 
-function generateProductInputs() {
+function generateProducts() {
   const container = document.getElementById("productsContainer");
-  const count = parseInt(document.getElementById("productCount").value);
-  
+  const count = Number(document.getElementById("productCount").value);
   container.innerHTML = "";
-  
-  if (count > 0) {
+
+  if (count > 0 && Number.isInteger(count)) {
     for (let i = 0; i < count; i++) {
       container.innerHTML += `
-        <div style="margin-bottom: 10px;">
-          <strong>${i + 1}.</strong><br>
-          <label>Product Name</label><br>
+        <div>
+          <label for="productName-${i}">Product Name</label><br>
           <input type="text" id="productName-${i}"><br>
-          <label>Price</label><br>
-          <input type="text" id="productPrice-${i}"><br>
-          <label>Quantity</label><br>
-          <input type="text" id="productQuantity-${i}">
+          <label for="productPrice-${i}">Price</label><br>
+          <input type="number" id="productPrice-${i}"><br>
+          <label for="productQuantity-${i}">Quantity</label><br>
+          <input type="number" id="productQuantity-${i}"><br><br>
         </div>
       `;
     }
   }
 }
 
-document.getElementById("productCount").addEventListener("input", generateProductInputs);
-document.getElementById("productCount").addEventListener("change", generateProductInputs);
+document.getElementById("productCount").addEventListener("input", generateProducts);
+document.getElementById("productCount").addEventListener("change", generateProducts);
 
-document.getElementById("calculateBtn").addEventListener("click", function() {
+document.getElementById("calculateBtn").addEventListener("click", function () {
   const validationMessage = document.getElementById("validationMessage");
   const orderSummary = document.getElementById("orderSummary");
-  
+
   validationMessage.innerText = "";
   orderSummary.innerText = "";
 
   const customerName = document.getElementById("customerName").value.trim();
-  const productCountVal = document.getElementById("productCount").value;
-  const count = parseInt(productCountVal);
+  const count = Number(document.getElementById("productCount").value);
 
   if (customerName === "") {
-    validationMessage.innerText = "Please provide a Customer Name.";
+    validationMessage.innerText = "Please enter a valid Customer Name.";
     return;
   }
 
-  if (isNaN(count) || count <= 0) {
-    validationMessage.innerText = "Please provide a valid Number of Products.";
+  if (isNaN(count) || count <= 0 || !Number.isInteger(count)) {
+    validationMessage.innerText = "Please enter a valid positive Number of Products.";
     return;
   }
 
   if (!document.getElementById("productName-0")) {
-    generateProductInputs();
+    generateProducts();
   }
 
   let subtotal = 0;
-  let productDetailsText = "";
+  let productDetails = "";
 
   for (let i = 0; i < count; i++) {
-    const nameField = document.getElementById(`productName-${i}`);
-    const priceField = document.getElementById(`productPrice-${i}`);
-    const qtyField = document.getElementById(`productQuantity-${i}`);
+    const nameElem = document.getElementById(`productName-${i}`);
+    const priceElem = document.getElementById(`productPrice-${i}`);
+    const qtyElem = document.getElementById(`productQuantity-${i}`);
 
-    if (!nameField || !priceField || !qtyField) {
-      validationMessage.innerText = "Input fields missing.";
+    if (!nameElem || !priceElem || !qtyElem) {
+      validationMessage.innerText = "Product input fields are missing.";
       return;
     }
 
-    const name = nameField.value.trim();
-    const price = parseFloat(priceField.value);
-    const quantity = parseInt(qtyField.value);
+    const name = nameElem.value.trim();
+    const price = Number(priceElem.value);
+    const quantity = Number(qtyElem.value);
 
     if (name === "" || isNaN(price) || price <= 0 || isNaN(quantity) || quantity <= 0) {
-      validationMessage.innerText = `Invalid inputs for Product ${i + 1}.`;
+      validationMessage.innerText = `Please enter valid values for Product ${i + 1}.`;
       return;
     }
 
-    const amount = calculateItemAmount(price, quantity);
-    subtotal += amount;
+    const itemAmount = calculateItemAmount(price, quantity);
+    subtotal += itemAmount;
 
-    const fPrice = "₱" + price.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    const fAmount = "₱" + amount.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const formattedPrice = "₱" + price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formattedAmount = "₱" + itemAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    productDetailsText += `${i + 1}. ${name}\n`;
-    productDetailsText += `   Price: ${fPrice}\n`;
-    productDetailsText += `   Quantity: ${quantity}\n`;
-    productDetailsText += `   Amount: ${fAmount}\n\n`;
+    productDetails += `${i + 1}. ${name}\n`;
+    productDetails += `   Price: ${formattedPrice}\n`;
+    productDetails += `   Quantity: ${quantity}\n`;
+    productDetails += `   Amount: ${formattedAmount}\n\n`;
   }
 
   const discountAmount = calculateDiscount(subtotal);
-  const deliveryOption = document.getElementById("deliveryOption").value;
-  const deliveryFee = getDeliveryFee(deliveryOption);
-  const finalAmount = subtotal - discountAmount + deliveryFee;
 
   let discountRate = 0;
   if (subtotal >= 5000) discountRate = 10;
   else if (subtotal >= 3000) discountRate = 7;
   else if (subtotal >= 1000) discountRate = 5;
 
+  const deliveryOption = document.getElementById("deliveryOption").value;
+  const deliveryFee = getDeliveryFee(deliveryOption);
+
   let deliveryType = "";
-  if (deliveryOption === "1") deliveryType = "Store Pickup";
-  else if (deliveryOption === "2") deliveryType = "Standard Delivery";
-  else if (deliveryOption === "3") deliveryType = "Express Delivery";
+  switch (String(deliveryOption)) {
+    case "1": deliveryType = "Store Pickup"; break;
+    case "2": deliveryType = "Standard Delivery"; break;
+    case "3": deliveryType = "Express Delivery"; break;
+  }
 
-  const fSubtotal = "₱" + subtotal.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  const fDiscount = "₱" + discountAmount.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  const fDelivery = "₱" + deliveryFee.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  const fFinal = "₱" + finalAmount.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const finalAmount = subtotal - discountAmount + deliveryFee;
 
-  const summaryText = 
+  const fSubtotal = "₱" + subtotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fDiscountAmount = "₱" + discountAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fDeliveryFee = "₱" + deliveryFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fFinalAmount = "₱" + finalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const summaryText =
 `MINI STORE CHECKOUT SYSTEM
 
 Customer: ${customerName}
 
-${productDetailsText}ORDER SUMMARY
+${productDetails}ORDER SUMMARY
 Subtotal: ${fSubtotal}
 Discount Rate: ${discountRate}%
-Discount Amount: ${fDiscount}
+Discount Amount: ${fDiscountAmount}
 Delivery Type: ${deliveryType}
-Delivery Fee: ${fDelivery}
-Final Amount: ${fFinal}`;
+Delivery Fee: ${fDeliveryFee}
+Final Amount: ${fFinalAmount}`;
 
   orderSummary.innerText = summaryText;
 });
