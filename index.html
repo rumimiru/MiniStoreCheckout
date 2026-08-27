@@ -12,9 +12,7 @@
   <input type="text" id="customerName"><br><br>
 
   <label for="productCount">Number of Products</label><br>
-  <input type="text" id="productCount"><br><br>
-
-  <button id="generateBtn">Generate Product Fields</button><br><br>
+  <input type="number" id="productCount" min="1"><br><br>
 
   <div id="productsContainer"></div><br>
 
@@ -27,7 +25,7 @@
 
   <button id="calculateBtn">Calculate Order</button><br><br>
 
-  <p id="validationMessage" style="color: red;"></p>
+  <div id="validationMessage" style="color: red;"></div>
   <pre id="orderSummary"></pre>
 
   <script src="script.js"></script>
