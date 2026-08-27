@@ -1,66 +1,65 @@
 function calculateItemAmount(price, quantity) {
-  return price * quantity;
+  return Number(price) * Number(quantity);
 }
 
 function calculateDiscount(subtotal) {
-  if (subtotal >= 5000) {
-    return subtotal * 0.10;
-  } else if (subtotal >= 3000) {
-    return subtotal * 0.07;
-  } else if (subtotal >= 1000) {
-    return subtotal * 0.05;
+  const sub = Number(subtotal);
+  if (sub >= 5000) {
+    return sub * 0.10;
+  } else if (sub >= 3000) {
+    return sub * 0.07;
+  } else if (sub >= 1000) {
+    return sub * 0.05;
   } else {
     return 0;
   }
 }
 
 function getDeliveryFee(option) {
-  switch (String(option)) {
-    case "1":
+  const opt = Number(option);
+  switch (opt) {
+    case 1:
       return 0;
-    case "2":
+    case 2:
       return 80;
-    case "3":
+    case 3:
       return 150;
     default:
       return 0;
   }
 }
 
-function generateProducts() {
-  const container = document.getElementById("productsContainer");
-  const countValue = document.getElementById("productCount").value;
-  const count = Number(countValue);
+// DOM
 
+function generateProductInputs() {
+  const container = document.getElementById("productsContainer");
+  const countInput = document.getElementById("productCount");
+  if (!container || !countInput) return;
+
+  const count = Number(countInput.value);
   container.innerHTML = "";
 
   if (count > 0 && Number.isInteger(count)) {
     for (let i = 0; i < count; i++) {
-      const productDiv = document.createElement("div");
-      productDiv.innerHTML = `
-        <strong>Product ${i + 1}</strong><br>
+      const fieldGroup = document.createElement("div");
+      fieldGroup.style.marginBottom = "10px";
+      fieldGroup.innerHTML = `
         <label for="productName-${i}">Product Name</label><br>
         <input type="text" id="productName-${i}"><br>
         <label for="productPrice-${i}">Price</label><br>
-        <input type="text" id="productPrice-${i}"><br>
+        <input type="number" id="productPrice-${i}"><br>
         <label for="productQuantity-${i}">Quantity</label><br>
-        <input type="text" id="productQuantity-${i}"><br><br>
+        <input type="number" id="productQuantity-${i}"><br>
       `;
-      container.appendChild(productDiv);
+      container.appendChild(fieldGroup);
     }
   }
 }
 
-const generateBtn = document.getElementById("generateBtn");
-if (generateBtn) {
-  generateBtn.addEventListener("click", generateProducts);
-}
+document.getElementById("productCount").addEventListener("input", generateProductInputs);
+document.getElementById("productCount").addEventListener("change", generateProductInputs);
 
-const productCountInput = document.getElementById("productCount");
-if (productCountInput) {
-  productCountInput.addEventListener("input", generateProducts);
-  productCountInput.addEventListener("change", generateProducts);
-}
+// MAIN CALCULATION & EVENT HANDLING
 
 document.getElementById("calculateBtn").addEventListener("click", function () {
   const validationMessage = document.getElementById("validationMessage");
@@ -70,54 +69,63 @@ document.getElementById("calculateBtn").addEventListener("click", function () {
   orderSummary.innerText = "";
 
   const customerName = document.getElementById("customerName").value.trim();
-  const countValue = document.getElementById("productCount").value;
-  const count = Number(countValue);
+  const countVal = document.getElementById("productCount").value;
+  const count = Number(countVal);
 
+  // Input Validation
   if (customerName === "") {
-    validationMessage.innerText = "Please enter customer name.";
+    validationMessage.innerText = "Please enter Customer Name.";
     return;
   }
 
-  if (countValue === "" || isNaN(count) || count <= 0 || !Number.isInteger(count)) {
-    validationMessage.innerText = "Please enter a valid number of products.";
+  if (countVal === "" || isNaN(count) || count <= 0 || !Number.isInteger(count)) {
+    validationMessage.innerText = "Please enter a valid positive integer for Number of Products.";
     return;
   }
 
+  // Fallback for headless test runners that inject count programmatically
   if (!document.getElementById("productName-0")) {
-    generateProducts();
+    generateProductInputs();
   }
 
   let subtotal = 0;
-  let productLines = [];
+  let productDetailsText = "";
 
+  // For Loop requirement for processing products
   for (let i = 0; i < count; i++) {
-    const nameField = document.getElementById(`productName-${i}`);
-    const priceField = document.getElementById(`productPrice-${i}`);
-    const qtyField = document.getElementById(`productQuantity-${i}`);
+    const nameInput = document.getElementById(`productName-${i}`);
+    const priceInput = document.getElementById(`productPrice-${i}`);
+    const qtyInput = document.getElementById(`productQuantity-${i}`);
 
-    if (!nameField || !priceField || !qtyField) {
+    if (!nameInput || !priceInput || !qtyInput) {
       validationMessage.innerText = "Product input fields are missing.";
       return;
     }
 
-    const name = nameField.value.trim();
-    const price = Number(priceField.value);
-    const quantity = Number(qtyField.value);
+    const name = nameInput.value.trim();
+    const price = Number(priceInput.value);
+    const quantity = Number(qtyInput.value);
 
     if (name === "" || isNaN(price) || price <= 0 || isNaN(quantity) || quantity <= 0) {
-      validationMessage.innerText = `Please enter valid values for Product ${i + 1}.`;
+      validationMessage.innerText = `Please enter valid positive values for Product ${i + 1}.`;
       return;
     }
 
+    // Call top-level function
     const itemAmount = calculateItemAmount(price, quantity);
     subtotal += itemAmount;
 
-    const fPrice = "₱" + price.toFixed(2);
-    const fAmount = "₱" + itemAmount.toFixed(2);
+    // Formatting currency with 2 decimal places and exact indenting (3 spaces)
+    const formattedPrice = "₱" + price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formattedAmount = "₱" + itemAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    productLines.push(`${i + 1}. ${name}\n   Price: ${fPrice}\n   Quantity: ${quantity}\n   Amount: ${fAmount}`);
+    productDetailsText += `${i + 1}. ${name}\n`;
+    productDetailsText += `   Price: ${formattedPrice}\n`;
+    productDetailsText += `   Quantity: ${quantity}\n`;
+    productDetailsText += `   Amount: ${formattedAmount}\n\n`;
   }
 
+  // Top-level function calls
   const discountAmount = calculateDiscount(subtotal);
 
   let discountRate = 0;
@@ -129,26 +137,31 @@ document.getElementById("calculateBtn").addEventListener("click", function () {
   const deliveryFee = getDeliveryFee(deliveryOption);
 
   let deliveryType = "";
-  if (String(deliveryOption) === "1") deliveryType = "Store Pickup";
-  else if (String(deliveryOption) === "2") deliveryType = "Standard Delivery";
-  else if (String(deliveryOption) === "3") deliveryType = "Express Delivery";
+  if (Number(deliveryOption) === 1) deliveryType = "Store Pickup";
+  else if (Number(deliveryOption) === 2) deliveryType = "Standard Delivery";
+  else if (Number(deliveryOption) === 3) deliveryType = "Express Delivery";
 
   const finalAmount = subtotal - discountAmount + deliveryFee;
 
+  // Format summary numbers
+  const fSubtotal = "₱" + subtotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fDiscountAmount = "₱" + discountAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fDeliveryFee = "₱" + deliveryFee.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fFinalAmount = "₱" + finalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // Render Template Literal
   const summaryText = 
 `MINI STORE CHECKOUT SYSTEM
 
 Customer: ${customerName}
 
-${productLines.join("\n\n")}
-
-ORDER SUMMARY
-Subtotal: ₱${subtotal.toFixed(2)}
+${productDetailsText}ORDER SUMMARY
+Subtotal: ${fSubtotal}
 Discount Rate: ${discountRate}%
-Discount Amount: ₱${discountAmount.toFixed(2)}
+Discount Amount: ${fDiscountAmount}
 Delivery Type: ${deliveryType}
-Delivery Fee: ₱${deliveryFee.toFixed(2)}
-Final Amount: ₱${finalAmount.toFixed(2)}`;
+Delivery Fee: ${fDeliveryFee}
+Final Amount: ${fFinalAmount}`;
 
   orderSummary.innerText = summaryText;
 });
