@@ -207,6 +207,7 @@ function calculateOrder() {
   summaryText += "Final Amount: \u20B1" + finalAmount.toFixed(2);
 
   orderSummary.innerText = summaryText;
+  console.log(summaryText);
 }
 
 // Connect the buttons to their functions
